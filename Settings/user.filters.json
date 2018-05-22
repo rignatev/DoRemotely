@@ -1,0 +1,48 @@
+[
+    {
+        // First filter
+        "TypeName": "ObjectFilter",
+        "Enabled": true,
+        "Settings": {
+            "IncludeEnabled": true,
+            "ExcludeEnabled": true,
+            "IncludeFirst": false,
+            "CaseSensitive": false,
+            "Equality": false,
+            "Regex": false
+        },
+        "Actions": {
+            "Include": {
+                "HostName": [],
+                "HostType": ["*"]
+            },
+            "Exclude": {
+                "HostName": [],
+                "HostType": ["SERVER"]
+            }
+        }
+    },
+    {
+        // Second filter
+        "TypeName": "ObjectFilter",
+        "Enabled": false,
+        "Settings": {
+            "IncludeEnabled": true,
+            "ExcludeEnabled": true,
+            "IncludeFirst": false,
+            "CaseSensitive": false,
+            "Equality": false,
+            "Regex": false
+        },
+        "Actions": {
+            "Include": {
+                "HostName": [],
+                "HostType": ["*"]
+            },
+            "Exclude": {
+                "HostName": [],
+                "HostType": ["SERVER"]
+            }
+        }
+    }    
+]
