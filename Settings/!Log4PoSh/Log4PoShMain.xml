@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Log4Posh node is a main node of configuration. It contains Appender nodes.
+    Level = "[Debug | Info | Warn | Error | Fatal]". This is the level of logging. Debug includes Info ,Warn, Error, Fatal. Info includes Warn, Error, Fatal and so on.
+    PoshDebugIntegration = "[True | False]". True - injects the logger to Write-Debug, Write-Verbose, Write-Warning, Write-Error cmdlets.
+-->
+<Log4Posh Level="Error" PoshDebugIntegration="False">
+    <!--
+        Appender 'RollerFileAppender'
+        Type="RollerFileAppender" - identifies RollerFileAppender configuration node.
+        FileFolderPath="" - the path to a folder where a log file will be created. If empty - a folder of a main script will be used.
+        FileBaseName="base_name" - the base name for a log file. If empty - a base name of a main script will be used.
+        FileExtension=".txt" - the extension for a log file. If empty - a '.log' extension will be used.
+        BackupFolderPath="" - the path to a folder where a backup log files will be stored. If empty - a folder of a main script will be used.
+        MaxFileSize="10Mb" - the maximum size that the output file is allowed to reach before being rolled over to backup files. If empty - the log backup will be never used.
+        MaxFilesCount="" - the maximum number of backup files that are kept before the oldest is erased. If empty or 0 - the log backup will never be erased.
+        ThreadingSupport="[True|False]" - enables/disables multitreading support with concurency access to a log file. True - threads will waiting for releasing a log file. Turning on this parameter may slow down your script working.
+    -->
+    <Appender Type="RollerFileAppender" FileFolderPath="" FileBaseName="DoRemotelyMain" FileExtension=".log" BackupFolderPath="" MaxFileSize="" MaxFilesCount="" ThreadingSupport="False">
+        <!--
+            Layout 'PatternLayout'
+            Type="PatternLayout" - identifies PatternLayout configuration node.
+            Pattern="%d %t [%lvl]: %log_data" - the layout of a string for a inputed message, where %d=date %t=time %lvl=level %log_data=message to log.
+            DataFormat="dd/MM/yyyy" - the date formatter. Uses .NET standard.
+            TimeFormat="HH:mm:ss" - the time formatter. Uses .NET standard.
+            ExpandString="[True|False]" - allows to process special characters like `t,`n. False - do not process string, True - process string.
+
+            Custom Date and Time Format Strings:
+            https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings#escape
+            Use '\' for escape custom format specifiers ('/' is one of them), for example DataFormat="dd\/MM\/yyyy"
+        -->
+        <Layout Type="PatternLayout" Pattern="%d`t%t`t[%lvl]:`t%log_data" DataFormat="dd/MM/yyyy" TimeFormat="HH:mm:ss.fff" ExpandString="True"/>
+        <!--
+            Filter 'Filter'
+            Type="Filter" - identifies Filter configuration node.
+            AllowedLevels="" - this is an array of allowed for logging levels, comma separated. Example: AllowedLevels="Info,Error". If the value is empty, then the level is inherited from the Log4PoSh node.
+            IncludeText="" - logs only messages they contains the IncludeText value. If the value is empty, then logs all messages.
+            ExcludeText="" - logs only messages they doesn't contain the ExcludeText value. If is empty then logs all messages.
+            First the IncludeText applies, after that the ExcludeText applies.
+        -->
+        <Filter Type="Filter" AllowedLevels="" IncludeText="" ExcludeText=""/>
+    </Appender>
+</Log4Posh>
