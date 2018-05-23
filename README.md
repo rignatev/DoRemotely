@@ -1,6 +1,6 @@
 # DoRemotely
-The PowerShell script processes the collection of hosts and on each runs dolets (powershell scripts) via PSSession.
-Each dolet returns the result of its work. The results are saved in files and in the summary report.
+This PowerShell script handles the collection of hosts, running 'dolets' (powershell scripts) through PSSession on each one.
+The results of run are returned be every 'dolet' instance. Then results are saved to file and summary report.
 
 ## Requirements for use:
 * PowerShell V3
