@@ -19,7 +19,7 @@
     Author:           Roman Ignatyev
     Email:            rignatev@gmail.com
     Creation Date:    22.05.2018
-    Modified Date:    22.05.2018
+    Modified Date:    23.05.2018
 #>
 
 [CmdletBinding()]
@@ -390,16 +390,14 @@ $mainScriptBlock = {
                     break
                 }
                 $logger.Warn(('[ID={0}]{1}Cannot create a remote session with {2} using credentials {3}' -f $threadId, "`t", $hostObject.HostName, $credentials.UserName))
+                $logger.Debug(('[ID={0}]{1}Error:{2}{3}' -f $threadId, "`t", [System.Environment]::NewLine, $psSessionError[0]))
             }            
         }
         else {
             $remoteSession = New-PSSession -ComputerName $hostObject.HostName -ErrorAction SilentlyContinue -ErrorVariable psSessionError
         }
-        if ($psSessionError) {
-            throw $psSessionError[0]
-        }
-        if (-not $remoteSession) {
-            
+        if ($psSessionError -or -not $remoteSession) {
+            throw '[ID={0}]{1}Cannot create a remote session with {2}' -f $threadId, "`t", $hostObject.HostName
         }
         $doletReport.PSSession = $true
 
