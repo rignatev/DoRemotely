@@ -9,7 +9,7 @@ param (
     [psobject]
     $Result,
 
-    # PSObject with Dolet settings
+    # PSObject with Host data
     [Parameter(Mandatory=$true, Position=2)]
     [psobject]
     $HostObject
