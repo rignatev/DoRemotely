@@ -561,6 +561,8 @@ $mainScriptBlock = {
     }
 
     $logger.Info(('[ID={0}]{1}End thread {2}' -f $threadId, "`t", $threadId))
+    
+    Start-Sleep -Milliseconds 200
 }
 #endregion MainScriptBlock
 
