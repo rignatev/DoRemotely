@@ -1,7 +1,7 @@
 function New-DoletReport {
     [CmdletBinding()]
     param (
-        # Parameter help description
+        # PSObject with Host data
         [Parameter(Mandatory =$true, Position = 0)]
         [psobject]
         $HostObject

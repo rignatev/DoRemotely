@@ -1,7 +1,7 @@
 function New-DoletResult {
     [CmdletBinding()]
     param (
-        # Parameter help description
+        # PSObject with dolet settings
         [Parameter(Mandatory = $true, Position = 0)]
         [psobject]
         $DoletSettings
