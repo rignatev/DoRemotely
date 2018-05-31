@@ -1,7 +1,7 @@
 function New-HostCsvHeader {
     [CmdletBinding()]
     param (
-        # Parameter help description
+        # Specifies a custom header object from user settings property 'HostsFile.CSV.Header'
         [Parameter(Mandatory = $true, Position = 0)]
         [psobject]
         $CustomHeader

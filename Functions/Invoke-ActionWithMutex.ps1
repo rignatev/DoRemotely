@@ -3,18 +3,22 @@ function Invoke-ActionWithMutex
     [cmdletbinding()]
     param
     (
+        # Specifies a name of the mutex object
         [Parameter(Mandatory = $true, Position = 0)]
         [String]
         $Name,
 
+        # Specifies a script block that will be protected from simultaneous access by multiple threads or processes
         [Parameter(Mandatory = $true, Position = 1)]
         [scriptblock]
         $ScriptBlock,
 
+        # Specifies an argumets for the script block
         [Parameter(Mandatory = $false, Position = 2)]
         [Object[]]
         $ArgumentList,
 
+        # Specifies a scpope for mutex. Allowed values: <Local|Global>
         [Parameter(Mandatory = $false, Position = 3)]
         [ValidateSet('Local', 'Global')]
         [String]
