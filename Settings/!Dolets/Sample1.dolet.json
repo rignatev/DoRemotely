@@ -1,0 +1,36 @@
+{
+	"TypeName": "DoletSettings",
+	"Name": "Sample1",
+	"Version": "1.0",
+	
+    "File.Export": true,
+    "File.Type": "txt",
+    "File.Name": "",
+    "File.Name.Date.Starts": true,
+    "File.Name.Date.Ends": false,
+    "File.Name.Date.Fromat": "yyyyMMdd.HHmmss",
+    "File.Name.Date.Delimiter": "_",
+    "File.Encoding": "UTF8",
+    "File.TXT.Append": false,
+    "File.TXT.NoNewline": false,
+    "File.CSV.Append": false,
+    "File.CSV.Delimiter": ";",
+    "File.CSV.NoClobber": false,
+    "File.CSV.NoTypeInformation": true,
+    "File.CSV.UseCulture": false,
+    "File.XML.Depth": 4,
+    "File.XML.NoClobber": false,
+    "File.JSON.Depth": 4,
+	"File.JSON.Compress": false,
+		
+	"ReportResults": {
+		"MachineName": "-",
+		"CustomText": "-",
+		"Result" : "-"
+	},
+
+	"Custom": {
+		"Text": "Sample1 User Custom Text",
+		"Boolean": true
+	}
+}

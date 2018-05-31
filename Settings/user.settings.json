@@ -1,0 +1,18 @@
+{
+    "TypeName": "DoRemotelySettings",
+    
+    "Logs.Level.Main": "Error",
+    "Logs.Level.Threads": "Error",
+    
+    "HostsFile.CSV.Header": {
+        "Name": "-",
+        "Location": "-"
+    },
+    
+    "EnableFilter": false,
+    "EnableCredentials": true,
+    
+    "ThreadsThrottle": 10,
+    "Ping.Count": 2,
+    "Ping.Ignore": true
+}
