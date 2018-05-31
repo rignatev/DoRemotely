@@ -14,12 +14,12 @@
         PoshRSJob module to assist with data gathering
 
     .NOTES
-    Version:          0.1.0
+    Version:          1.0.0
     License:          MIT License
     Author:           Roman Ignatyev
     Email:            rignatev@gmail.com
     Creation Date:    22.05.2018
-    Modified Date:    23.05.2018
+    Modified Date:    31.05.2018
 #>
 
 [CmdletBinding()]
