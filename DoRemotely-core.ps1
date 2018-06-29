@@ -432,17 +432,23 @@ $mainScriptBlock = {
 
             # Fill the report
             $logger.Info(('[ID={0}]{1}Add result for dolet {2} on the {3} to the doletReport' -f $threadId, "`t", $doletName, $hostObject.HostName))
-            foreach ($propertyName in $doletsSettings.$doletName.ReportResults.PSObject.Properties.Name) {
-                $newPropertyName = ('[{0}]: {1}' -f $doletName, $propertyName)
-                if ($remoteResult.Status) {
-                    $doletReport.$newPropertyName = $remoteResult.ReportResults.$propertyName
+            try {
+                foreach ($propertyName in $doletsSettings.$doletName.ReportResults.PSObject.Properties.Name) {
+                    $newPropertyName = ('[{0}]: {1}' -f $doletName, $propertyName)
+                    if ($remoteResult.Status) {
+                        $doletReport.$newPropertyName = $remoteResult.ReportResults.$propertyName
+                    }
+                    else {
+                        $doletReport.$newPropertyName = 'Fail'
+                    }
                 }
-                else {
-                    $doletReport.$newPropertyName = 'Fail'
-                }
+                $logger.Debug(('[ID={0}]{1}doletReport = {2}' -f $threadId, "`t", ($doletReport | ConvertTo-Json)))
+                # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))                
             }
-            $logger.Debug(('[ID={0}]{1}doletReport = {2}' -f $threadId, "`t", ($doletReport | ConvertTo-Json)))
-            # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
+            catch {
+                $logger.Error(('[ID={0}]{1}Error while filling the report for {2} on the {3}' -f $threadId, "`t", $doletName, $hostObject.HostName))
+                $logger.Debug(('[ID={0}]{1}Error in dolet {2}:{3}{4}' -f $threadId, "`t", $doletName, [System.Environment]::NewLine, ($remoteResult.Error | Out-String)))
+            }
             
             # Export Result to the file
             if ($remoteResult.Status -and $doletsSettings.$doletName.'File.Export') {
