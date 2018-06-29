@@ -341,9 +341,12 @@ $mainScriptBlock = {
 
     # Add dolets ReportResults with default values to the doletReport object
     $logger.Info(('[ID={0}]{1}Prepare the doletReport with ReportResults of enabled dolets on the {2}' -f $threadId, "`t", $hostObject.HostName))
+    $logger.Debug(('[ID={0}]{1}doletsNames = {2}' -f $threadId, "`t", ($doletsNames | ConvertTo-Json)))
     $doletReport = New-DoletReport -HostObject $hostObject
     foreach ($doletName in $doletsNames) {
+        $logger.Debug(('[ID={0}]{1}doletName = {2}' -f $threadId, "`t", $doletName))
         foreach ($property in $doletsSettings.$doletName.ReportResults.PSObject.Properties) {
+            $logger.Debug(('[ID={0}]{1}property.Name = {2}' -f $threadId, "`t", $property.Name))
             $newPropertyName = ('[{0}]: {1}' -f $doletName, $property.Name)
             $doletReport | Add-Member -MemberType NoteProperty -Name $newPropertyName -Value $property.Value
         }
