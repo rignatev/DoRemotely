@@ -60,12 +60,15 @@ function New-DoRemotelySettings {
 
     // The time in milliseconds, to sleep the threads before closing
     "Threads.Sleep": 200,
-    
+
     // Number of pings when checking hosts
     "Ping.Count": 2,
 
     // Continue processing if the ping failed
-    "Ping.Ignore": false
+    "Ping.Ignore": false,
+
+    // Session cleanup from unused data
+    "SessionCleanup": false    
 }
 '@    
     }

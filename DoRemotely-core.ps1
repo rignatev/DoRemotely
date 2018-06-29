@@ -582,12 +582,15 @@ Write-Host "`nDone."
 Write-Host "Total minutes spent on processing:" $($((Get-Date) - $startProcessing).TotalMinutes)
 Start-Sleep -Seconds 1
 
-# Cleaning up
-$logger.Info('Cleaning up')
-
-# Get-RSJob | Remove-RSJob
-Set-Variable -Name PoshRS_JobID -Value 0 -Scope Global -Force
-
-[System.GC]::Collect()
+if ($settings.SessionCleanup) {
+    # Cleaning up
+    $logger.Info('Cleaning up')
+    
+    # Get-RSJob | Remove-RSJob
+    Set-Variable -Name PoshRS_JobID -Value 0 -Scope Global -Force
+    
+    # Force to run Garbage Collector
+    [System.GC]::Collect()
+}
 
 $logger.Info('End DoRemotely')
