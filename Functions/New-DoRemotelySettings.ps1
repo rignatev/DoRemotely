@@ -67,6 +67,9 @@ function New-DoRemotelySettings {
     // Continue processing if the ping failed
     "Ping.Ignore": false,
 
+    // Number of attempts to invoke Dolet when it failed
+    "InvokeDoletAttempts": 3,
+
     // Session cleanup from unused data
     "SessionCleanup": false    
 }

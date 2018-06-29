@@ -409,14 +409,26 @@ $mainScriptBlock = {
             $logger.Debug(('[ID={0}]{1}doletResult = {2}' -f $threadId, "`t", ($doletResult | ConvertTo-Json)))
 
             $logger.Info(('[ID={0}]{1}Invoke the dolet {2} on the {3}' -f $threadId, "`t", $doletName, $hostObject.HostName))
-            $remoteResults = Invoke-Command -Session $remoteSession -ScriptBlock $doletsScriptBlocks.$doletName -ArgumentList $doletsSettings.$doletName, $doletResult, $hostObject
-            foreach ($item in $remoteResults) { # Some times result has additional powershell objects
-                if ($item.TypeName -eq 'DoletResult') {
-                    $remoteResult = $item
-                    break
+            $remoteResults = $null
+            $attemptCount = 1
+            while (-not $remoteResults -and $attemptCount -le $settings.'InvokeDoletAttempts' ) {
+                $logger.Debug(('[ID={0}]{1}attemptCount = {2}' -f $threadId, "`t", $attemptCount))
+                try {
+                    $remoteResults = Invoke-Command -Session $remoteSession -ScriptBlock $doletsScriptBlocks.$doletName -ArgumentList $doletsSettings.$doletName, $doletResult, $hostObject -ErrorAction Stop
+                    foreach ($item in $remoteResults) { # Some times the result has additional powershell objects
+                        if ($item.TypeName -eq 'DoletResult') {
+                            $remoteResult = $item
+                            break
+                        }
+                    }
                 }
+                catch {
+                    $logger.Error(('[ID={0}]{1}Error invoking the dolet {2}' -f $threadId, "`t", $doletName))
+                    $logger.Debug(('[ID={0}]{1}Error in dolet {2}:{3}{4}' -f $threadId, "`t", $doletName, [System.Environment]::NewLine, ($Error[0] | Out-String)))
+                }
+                $attemptCount++
             }
-            # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
+            $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
             
             # If returned result is not a doletResult object, recreate it
             if (-not (Compare-PSObjectProperties -InputObject $remoteResult -ReferenceObject $doletResult -NoType -NoCount)) {
