@@ -34,10 +34,14 @@ function Compare-PSObjectProperties {
     )
 
     process {
+        if ($InputObject -eq $null) {
+            return $false
+        }
+        
         $CurrentDepth++
         foreach ($item in $InputObject) {
             # Verify that the objects are not $null
-            if (-not $ReferenceObject -or -not $item) {
+            if ($ReferenceObject -eq $null -or $item -eq $null) {
                 return $false
             }
 
