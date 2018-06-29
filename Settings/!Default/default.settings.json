@@ -12,7 +12,7 @@
     "HostsFile.CSV.Header": {},
     // Hosts CSV delimiter
     "HostsFile.CSV.Delimiter": ";",
- 
+    
     // Report file name
     "ReportFile.Name": "report.csv",
     // Add date to the begining of the report file name
@@ -46,8 +46,11 @@
     "EnableCredentials": false,
 
     // Number of concurrent running runspace threads which are allowed at a time
-    "ThreadsThrottle": 6,
+    "Threads.Throttle": 6,
 
+    // The time in milliseconds, to sleep the threads before closing
+    "Threads.Sleep": 200,
+    
     // Number of pings when checking hosts
     "Ping.Count": 2,
 

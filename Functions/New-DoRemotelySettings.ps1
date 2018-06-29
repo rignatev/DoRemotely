@@ -56,8 +56,11 @@ function New-DoRemotelySettings {
     "EnableCredentials": false,
 
     // Number of concurrent running runspace threads which are allowed at a time
-    "ThreadsThrottle": 6,
+    "Threads.Throttle": 6,
 
+    // The time in milliseconds, to sleep the threads before closing
+    "Threads.Sleep": 200,
+    
     // Number of pings when checking hosts
     "Ping.Count": 2,
 

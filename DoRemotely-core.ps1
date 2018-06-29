@@ -562,7 +562,7 @@ $mainScriptBlock = {
 
     $logger.Info(('[ID={0}]{1}End thread {2}' -f $threadId, "`t", $threadId))
     
-    Start-Sleep -Milliseconds 200
+    Start-Sleep -Milliseconds $settings.'Threads.Sleep'
 }
 #endregion MainScriptBlock
 
@@ -574,7 +574,7 @@ $logger.Info('Start threads spawning')
 Import-Csv -Path $HostsFilePath -Delimiter $settings.'HostsFile.CSV.Delimiter' -Header $settings.'HostsFile.CSV.Header'.PSObject.Properties.Name |
     Add-HostDefaultData -HostsCsvHeader $settings.'HostsFile.CSV.Header' |
     Invoke-ObjectFilters -Filters $filters -Enable:$settings.EnableFilter |
-    Start-RSJob -ScriptBlock $mainScriptBlock -Name {$_.HostName} -Throttle $settings.ThreadsThrottle | Wait-RSJob -ShowProgress | Remove-RSJob # Comment this row for debugging mainScriptBlock
+    Start-RSJob -ScriptBlock $mainScriptBlock -Name {$_.HostName} -Throttle $settings.'Threads.Throttle' | Wait-RSJob -ShowProgress | Remove-RSJob # Comment this row for debugging mainScriptBlock
     # ForEach-Object -Process {Invoke-Command -ScriptBlock $mainScriptBlock} # Uncomment this row for debugging mainScriptBlock
 #endregion Threads spawning
 
