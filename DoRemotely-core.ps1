@@ -14,12 +14,12 @@
         PoshRSJob module to assist with data gathering
 
     .NOTES
-    Version:          1.0.0
+    Version:          1.1.0
     License:          MIT License
     Author:           Roman Ignatyev
     Email:            rignatev@gmail.com
     Creation Date:    22.05.2018
-    Modified Date:    31.05.2018
+    Modified Date:    23.07.2018
 #>
 
 [CmdletBinding()]
@@ -341,9 +341,12 @@ $mainScriptBlock = {
 
     # Add dolets ReportResults with default values to the doletReport object
     $logger.Info(('[ID={0}]{1}Prepare the doletReport with ReportResults of enabled dolets on the {2}' -f $threadId, "`t", $hostObject.HostName))
+    $logger.Debug(('[ID={0}]{1}doletsNames = {2}' -f $threadId, "`t", ($doletsNames | ConvertTo-Json)))
     $doletReport = New-DoletReport -HostObject $hostObject
     foreach ($doletName in $doletsNames) {
+        $logger.Debug(('[ID={0}]{1}doletName = {2}' -f $threadId, "`t", $doletName))
         foreach ($property in $doletsSettings.$doletName.ReportResults.PSObject.Properties) {
+            $logger.Debug(('[ID={0}]{1}property.Name = {2}' -f $threadId, "`t", $property.Name))
             $newPropertyName = ('[{0}]: {1}' -f $doletName, $property.Name)
             $doletReport | Add-Member -MemberType NoteProperty -Name $newPropertyName -Value $property.Value
         }
@@ -409,14 +412,26 @@ $mainScriptBlock = {
             $logger.Debug(('[ID={0}]{1}doletResult = {2}' -f $threadId, "`t", ($doletResult | ConvertTo-Json)))
 
             $logger.Info(('[ID={0}]{1}Invoke the dolet {2} on the {3}' -f $threadId, "`t", $doletName, $hostObject.HostName))
-            $remoteResults = Invoke-Command -Session $remoteSession -ScriptBlock $doletsScriptBlocks.$doletName -ArgumentList $doletsSettings.$doletName, $doletResult, $hostObject
-            foreach ($item in $remoteResults) { # Some times result has additional powershell objects
-                if ($item.TypeName -eq 'DoletResult') {
-                    $remoteResult = $item
-                    break
+            $remoteResults = $null
+            $attemptCount = 1
+            while (-not $remoteResults -and $attemptCount -le $settings.'InvokeDoletAttempts' ) {
+                $logger.Debug(('[ID={0}]{1}attemptCount = {2}' -f $threadId, "`t", $attemptCount))
+                try {
+                    $remoteResults = Invoke-Command -Session $remoteSession -ScriptBlock $doletsScriptBlocks.$doletName -ArgumentList $doletsSettings.$doletName, $doletResult, $hostObject -ErrorAction Stop
+                    foreach ($item in $remoteResults) { # Some times the result has additional powershell objects
+                        if ($item.TypeName -eq 'DoletResult') {
+                            $remoteResult = $item
+                            break
+                        }
+                    }
                 }
+                catch {
+                    $logger.Error(('[ID={0}]{1}Error invoking the dolet {2}' -f $threadId, "`t", $doletName))
+                    $logger.Debug(('[ID={0}]{1}Error in dolet {2}:{3}{4}' -f $threadId, "`t", $doletName, [System.Environment]::NewLine, ($Error[0] | Out-String)))
+                }
+                $attemptCount++
             }
-            # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
+            $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
             
             # If returned result is not a doletResult object, recreate it
             if (-not (Compare-PSObjectProperties -InputObject $remoteResult -ReferenceObject $doletResult -NoType -NoCount)) {
@@ -432,17 +447,23 @@ $mainScriptBlock = {
 
             # Fill the report
             $logger.Info(('[ID={0}]{1}Add result for dolet {2} on the {3} to the doletReport' -f $threadId, "`t", $doletName, $hostObject.HostName))
-            foreach ($propertyName in $doletsSettings.$doletName.ReportResults.PSObject.Properties.Name) {
-                $newPropertyName = ('[{0}]: {1}' -f $doletName, $propertyName)
-                if ($remoteResult.Status) {
-                    $doletReport.$newPropertyName = $remoteResult.ReportResults.$propertyName
+            try {
+                foreach ($propertyName in $doletsSettings.$doletName.ReportResults.PSObject.Properties.Name) {
+                    $newPropertyName = ('[{0}]: {1}' -f $doletName, $propertyName)
+                    if ($remoteResult.Status) {
+                        $doletReport.$newPropertyName = $remoteResult.ReportResults.$propertyName
+                    }
+                    else {
+                        $doletReport.$newPropertyName = 'Fail'
+                    }
                 }
-                else {
-                    $doletReport.$newPropertyName = 'Fail'
-                }
+                $logger.Debug(('[ID={0}]{1}doletReport = {2}' -f $threadId, "`t", ($doletReport | ConvertTo-Json)))
+                # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))                
             }
-            $logger.Debug(('[ID={0}]{1}doletReport = {2}' -f $threadId, "`t", ($doletReport | ConvertTo-Json)))
-            # $logger.Debug(('[ID={0}]{1}remoteResult = {2}' -f $threadId, "`t", ($remoteResult | ConvertTo-Json)))
+            catch {
+                $logger.Error(('[ID={0}]{1}Error while filling the report for {2} on the {3}' -f $threadId, "`t", $doletName, $hostObject.HostName))
+                $logger.Debug(('[ID={0}]{1}Error in dolet {2}:{3}{4}' -f $threadId, "`t", $doletName, [System.Environment]::NewLine, ($remoteResult.Error | Out-String)))
+            }
             
             # Export Result to the file
             if ($remoteResult.Status -and $doletsSettings.$doletName.'File.Export') {
@@ -476,7 +497,9 @@ $mainScriptBlock = {
                         'txt' {
                             $resultDoletFilePath = ('{0}\{1}.{2}' -f $resultDoletPath, $resultDoletFileName, 'txt')
                             if ($doletsSettings.$doletName.'File.TXT.Append') {
-                                Add-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
+                                Invoke-ActionWithMutex -Name (Get-StringHash -String $resultDoletFilePath) -Prefix Global -ScriptBlock {
+                                    Add-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
+                                }
                             }
                             else {
                                 Set-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
@@ -494,7 +517,14 @@ $mainScriptBlock = {
                                 NoClobber = $doletsSettings.$doletName.'File.CSV.NoClobber'
                                 NoTypeInformation = $doletsSettings.$doletName.'File.CSV.NoTypeInformation'
                             }
-                            $remoteResult.Result | Export-Csv @csvHashArguments
+                            if ($doletsSettings.$doletName.'File.CSV.Append') {
+                                Invoke-ActionWithMutex -Name (Get-StringHash -String $resultDoletFilePath) -Prefix Global -ScriptBlock {
+                                    $remoteResult.Result | Export-Csv @csvHashArguments
+                                }
+                            }
+                            else {
+                                $remoteResult.Result | Export-Csv @csvHashArguments
+                            }
                             break
                         }
                         'xml' {
@@ -562,7 +592,7 @@ $mainScriptBlock = {
 
     $logger.Info(('[ID={0}]{1}End thread {2}' -f $threadId, "`t", $threadId))
     
-    Start-Sleep -Milliseconds 200
+    Start-Sleep -Milliseconds $settings.'Threads.Sleep'
 }
 #endregion MainScriptBlock
 
@@ -574,7 +604,7 @@ $logger.Info('Start threads spawning')
 Import-Csv -Path $HostsFilePath -Delimiter $settings.'HostsFile.CSV.Delimiter' -Header $settings.'HostsFile.CSV.Header'.PSObject.Properties.Name |
     Add-HostDefaultData -HostsCsvHeader $settings.'HostsFile.CSV.Header' |
     Invoke-ObjectFilters -Filters $filters -Enable:$settings.EnableFilter |
-    Start-RSJob -ScriptBlock $mainScriptBlock -Name {$_.HostName} -Throttle $settings.ThreadsThrottle | Wait-RSJob -ShowProgress | Remove-RSJob # Comment this row for debugging mainScriptBlock
+    Start-RSJob -ScriptBlock $mainScriptBlock -Name {$_.HostName} -Throttle $settings.'Threads.Throttle' | Wait-RSJob -ShowProgress | Remove-RSJob # Comment this row for debugging mainScriptBlock
     # ForEach-Object -Process {Invoke-Command -ScriptBlock $mainScriptBlock} # Uncomment this row for debugging mainScriptBlock
 #endregion Threads spawning
 
@@ -582,12 +612,15 @@ Write-Host "`nDone."
 Write-Host "Total minutes spent on processing:" $($((Get-Date) - $startProcessing).TotalMinutes)
 Start-Sleep -Seconds 1
 
-# Cleaning up
-$logger.Info('Cleaning up')
-
-# Get-RSJob | Remove-RSJob
-Set-Variable -Name PoshRS_JobID -Value 0 -Scope Global -Force
-
-[System.GC]::Collect()
+if ($settings.SessionCleanup) {
+    # Cleaning up
+    $logger.Info('Cleaning up')
+    
+    # Get-RSJob | Remove-RSJob
+    Set-Variable -Name PoshRS_JobID -Value 0 -Scope Global -Force
+    
+    # Force to run Garbage Collector
+    [System.GC]::Collect()
+}
 
 $logger.Info('End DoRemotely')

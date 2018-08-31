@@ -56,13 +56,22 @@ function New-DoRemotelySettings {
     "EnableCredentials": false,
 
     // Number of concurrent running runspace threads which are allowed at a time
-    "ThreadsThrottle": 6,
+    "Threads.Throttle": 6,
+
+    // The time in milliseconds, to sleep the threads before closing
+    "Threads.Sleep": 200,
 
     // Number of pings when checking hosts
     "Ping.Count": 2,
 
     // Continue processing if the ping failed
-    "Ping.Ignore": false
+    "Ping.Ignore": false,
+
+    // Number of attempts to invoke Dolet when it failed
+    "InvokeDoletAttempts": 3,
+
+    // Session cleanup from unused data
+    "SessionCleanup": false    
 }
 '@    
     }
