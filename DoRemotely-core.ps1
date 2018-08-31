@@ -14,12 +14,12 @@
         PoshRSJob module to assist with data gathering
 
     .NOTES
-    Version:          1.0.0
+    Version:          1.1.0
     License:          MIT License
     Author:           Roman Ignatyev
     Email:            rignatev@gmail.com
     Creation Date:    22.05.2018
-    Modified Date:    31.05.2018
+    Modified Date:    23.07.2018
 #>
 
 [CmdletBinding()]
@@ -497,7 +497,9 @@ $mainScriptBlock = {
                         'txt' {
                             $resultDoletFilePath = ('{0}\{1}.{2}' -f $resultDoletPath, $resultDoletFileName, 'txt')
                             if ($doletsSettings.$doletName.'File.TXT.Append') {
-                                Add-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
+                                Invoke-ActionWithMutex -Name (Get-StringHash -String $resultDoletFilePath) -Prefix Global -ScriptBlock {
+                                    Add-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
+                                }
                             }
                             else {
                                 Set-Content -Path $resultDoletFilePath -Value $remoteResult.Result -Encoding $doletsSettings.$doletName.'File.Encoding' -NoNewline:$doletsSettings.$doletName.'File.TXT.NoNewline' -Force
@@ -515,7 +517,14 @@ $mainScriptBlock = {
                                 NoClobber = $doletsSettings.$doletName.'File.CSV.NoClobber'
                                 NoTypeInformation = $doletsSettings.$doletName.'File.CSV.NoTypeInformation'
                             }
-                            $remoteResult.Result | Export-Csv @csvHashArguments
+                            if ($doletsSettings.$doletName.'File.CSV.Append') {
+                                Invoke-ActionWithMutex -Name (Get-StringHash -String $resultDoletFilePath) -Prefix Global -ScriptBlock {
+                                    $remoteResult.Result | Export-Csv @csvHashArguments
+                                }
+                            }
+                            else {
+                                $remoteResult.Result | Export-Csv @csvHashArguments
+                            }
                             break
                         }
                         'xml' {
